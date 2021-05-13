@@ -1,39 +1,50 @@
 const express = require('express');
-
-module.exports = function(app) {
-   devices = [];
-   const router = express.Router();
+const Device = require('../models/Device');
+const router = express.Router();
    
-   router.get('/', (req, res) => {
-       return res.send(devices); });
-  
-   router.post('/', (req, res) => {
-       devices.push(req.body);
-       res.status(201).end(); });
 
-   router.get('/:id', (req, res) => {
-       const device =  
-         devices.filter(function(device) {
-             return device.id == req.params.id; });
-        return res.send(device); });
-        router.put('/:id', (req, res) => {
-            var device = devices.filter(function(device) {
-                return device.id == req.params.id; });
-            device = req.body;
-            const index = devices.indexOf(device);
-            devices.splice(index, 1, device);
-            res.status(201).end();
-        });
-       
-        router.delete('/:id', (req, res) => {
-            const device = devices.filter(function(device) {
-                      return device.id == req.params.id; });
-            const index = devices.indexOf(device);
-            if( index >= 0)
-               app.locals.devices.splice(index, 1);
-            res.status(200).end();
-        });
+   //GET ALL DEVICES
+   router.get('/', (req, res) => {
+       Device.find()
+       .then((devices) => res.json(devices))
+       .catch((err) => res.status(400).json("Error:" + err));
+    });
+  
+
+   //ADD A DEVICE
+   router.post('/', (req, res) => {
+    const newDevice = new Device({
+        id: req.body.id,
+        name: req.body.name,
+    });
+    
+    newDevice
+    .save()
+    .then(() => res.json("Device Added"))
+    .catch((err) => res.status(400).json("Error : " + err));
+    });
+
+    //FIND A DEVICE BY ID(not mongo _id,but device 'id')
+    router.get("/:idNbr", (req, res) => {
+        Device.find({id : req.params.idNbr})
+          .then((device) => res.json(device))
+          .catch((err) => res.status(400).json("Device not found" + err));
+      });
+
+    //FIND A DEVICE BY ID AND UPDATE
+    router.put('/:idNbr', (req, res) => {
+        Device.findOneAndUpdate({id: req.params.idNbr}, {$set:{name:req.body.name}}, {new: true})
+            .then((device) => res.json(device))
+            .catch((err) => res.status(400).json("Device not found" + err));
+    });
+
+    //DELETE A DEVICE BY ID
+    router.delete('/:idNbr', (req,res) => {
+        Device.findOneAndDelete({id : req.params.idNbr})
+        .then((device) => res.json(device))
+        .catch((err) => res.status(400).json("Device not found" + err))
+    })
+
      
-        return router;
-     }
+module.exports = router;
      

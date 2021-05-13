@@ -1,13 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser')
+const mongoose = require('mongoose');
 const http = require('http');
 
 
+
+// Connect Database
+mongoose.connect("mongodb://localhost/TrackMe", {useNewUrlParser: true, useUnifiedTopology: true});
+
 const app = express()
 
-
 // Initialize The Middleware
-const deviceRouter = require('./routes/devices')(app);
+const deviceRouter = require('./routes/devices');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
